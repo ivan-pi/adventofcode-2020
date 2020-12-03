@@ -2,6 +2,10 @@ module day3
 
   use iso_fortran_env, only: ik => int64
   implicit none
+  private
+
+  public :: ik
+  public :: tree_map
 
   type :: tree_map
     integer(ik) :: h, w
@@ -21,7 +25,7 @@ contains
     integer(ik) :: i, im, jm
     character(len=100) :: buffer
 
-    trees_encountered = 0_ik
+    trees_encountered = 0
 
     ! Starting position
     im = 1
@@ -31,25 +35,29 @@ contains
       im = im + slope(2)
       jm = jm + slope(1)
 
+      ! The map is repetive
       if (jm > self%w) then
         jm = mod(jm,self%w)
       end if
 
+      ! Check we have reached the end
       if (im > self%h) exit
 
-      buffer = self%s(im)
-      if (buffer(jm:jm) == '.') then
-        buffer(jm:jm) = 'O'
-      else
-        buffer(jm:jm) = 'X'
-      end if
-
+      ! Just for checking
+      ! buffer = self%s(im)
+      ! if (buffer(jm:jm) == '.') then
+      !   buffer(jm:jm) = 'O'
+      ! else
+      !   buffer(jm:jm) = 'X'
+      ! end if
       ! write(*,*) trim(buffer)//"   "//self%s(im)
 
+      ! Count trees we encounter
       if (self%s(im)(jm:jm) == '#') then
         trees_encountered = trees_encountered + 1
       end if
     end do
+
   end function
 
   subroutine load_input(map,file)
@@ -60,16 +68,20 @@ contains
     character(len=100) :: buffer
 
     open(newunit=unit,file=file,status='old',action='read')
+    
     rows = count_rows(unit)
 
+    ! Count columns
     read(unit,*) buffer
     cols = len_trim(buffer)
     rewind(unit)
 
+    ! Initizalize tree map
     map%h = rows
     map%w = cols
     allocate(character(len=cols) :: map%s(rows))
 
+    ! Read trees from file unit
     do i = 1, rows
       read(unit,*) map%s(i)
     end do
@@ -86,7 +98,6 @@ contains
     n = 0
     do
       read(unit,*,iostat=err) str
-      ! print *, err, str
       if (err /= 0) then
         if (err > 0) then
           write(msg,'(A,I0,A,I0)') "Error encountered in unit ", unit, ". Error code: ", err
