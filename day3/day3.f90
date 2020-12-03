@@ -8,14 +8,15 @@ module day3
     character(len=:), allocatable :: s(:)
   contains
     procedure :: traverse => traverse_map
+    procedure :: load => load_input
   end type
 
 contains
 
-  subroutine traverse_map(self,slope,trees_encountered)
+  function traverse_map(self,slope) result(trees_encountered)
     class(tree_map), intent(in) :: self
     integer(ik), intent(in) :: slope(2) ! right, down
-    integer(ik), intent(out) :: trees_encountered
+    integer(ik) :: trees_encountered
 
     integer(ik) :: i, im, jm
     character(len=100) :: buffer
@@ -49,11 +50,11 @@ contains
         trees_encountered = trees_encountered + 1
       end if
     end do
-  end subroutine
+  end function
 
-  subroutine load_input(file,map)
+  subroutine load_input(map,file)
+    class(tree_map), intent(out) :: map
     character(len=*), intent(in) :: file
-    type(tree_map), intent(out) :: map
 
     integer(ik) :: unit, rows, cols, i
     character(len=100) :: buffer
@@ -108,21 +109,15 @@ program main
   implicit none
 
   type(tree_map) :: map
-  integer(ik) :: n, i, p
-  integer(ik) :: si(5), sj(5)
+  integer(ik) :: i, s(2), sr(5), sd(5)
 
-  call load_input("input",map)
+  call map%load("input")
 
-  call map%traverse(slope=[integer(ik) :: 3, 1],trees_encountered=n)
-  print *, "trees encountered: ", n
+  s = [3, 1]
+  print *, "trees encountered: ", map%traverse(s)
 
-  sj = [1,3,5,7,1] ! slope right
-  si = [1,1,1,1,2] ! slope down
-  p = 1
-  do i = 1, 5
-    call map%traverse(slope=[sj(i),si(i)],trees_encountered=n)
-    p = p * n
-  end do
-  print *, "result: ", p
+  sr = [1,3,5,7,1]
+  sd = [1,1,1,1,2]
+  print *, "result: ", product([(map%traverse([sr(i),sd(i)]),i=1,5)])
 
 end program
